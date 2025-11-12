@@ -1,7 +1,7 @@
 package com.example.postgre;
 
 
-import com.example.postgre.user.dto.request.CreateUserRequest;
+import com.example.postgre.user.dto.request.RegistrationRequest;
 import com.example.postgre.user.dto.request.EditUserRequest;
 import com.example.postgre.user.dto.response.UserResponse;
 import com.example.postgre.user.entity.UserEntity;
@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.accept.ContentNegotiationManager;
@@ -21,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.extension.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -57,13 +55,13 @@ public class WebTest {
 
     @Test
     void createTest() throws Exception {
-        CreateUserRequest request = CreateUserRequest.builder()
+        RegistrationRequest request = RegistrationRequest.builder()
                 .firstName("createTest")
                 .lastName("createTest")
                 .build();
 
         mockMvc.perform(
-                        post(UserRoutes.CREATE)
+                        post(UserRoutes.REGISTRATION)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -103,7 +101,6 @@ public class WebTest {
                 .build();
         userRepository.save(user);
         EditUserRequest request = EditUserRequest.builder()
-                .id(user.getId())
                 .firstName("updateTest")
                 .lastName("updateTest")
                 .build();
@@ -135,12 +132,12 @@ public class WebTest {
                     .firstName("firstName_" + i)
                     .lastName("lastName_" + i)
                     .build();
-            user=userRepository.save(user);
+            user = userRepository.save(user);
             result.add(UserResponse.of(user));
         }
 
         mockMvc.perform(get(UserRoutes.SEARCH).
-                param("size","1000").contentType(MediaType.APPLICATION_JSON))
+                        param("size", "1000").contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(result)));

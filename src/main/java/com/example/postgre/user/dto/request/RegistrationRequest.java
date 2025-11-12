@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class CreateUserRequest {
+public class RegistrationRequest {
     private String firstName;
     private String lastName;
     private String email;

@@ -2,9 +2,10 @@ package com.example.postgre.user.controller;
 
 
 import com.example.postgre.user.EditUserRequest;
-import com.example.postgre.user.dto.request.CreateUserRequest;
+import com.example.postgre.user.dto.request.RegistrationRequest;
 import com.example.postgre.user.dto.response.UserResponse;
 import com.example.postgre.user.exception.BadRequestException;
+import com.example.postgre.user.exception.UserAlreadyExistException;
 import com.example.postgre.user.exception.UserNotFoundException;
 import com.example.postgre.user.repository.UserRepository;
 import com.example.postgre.user.entity.UserEntity;
@@ -14,20 +15,22 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,9 +53,12 @@ public class UserApiController {
         return user;
     }
 
-    @PostMapping(UserRoutes.CREATE)
-    public UserResponse create(@RequestBody CreateUserRequest request) throws BadRequestException {
+    @PostMapping(UserRoutes.REGISTRATION)
+    public UserResponse registration(@RequestBody RegistrationRequest request) throws BadRequestException, UserAlreadyExistException {
         request.validate();
+
+        Optional<UserEntity> check=userRepository.findByEmail(request.getEmail());
+        if (check.isPresent()) throw new UserAlreadyExistException();
 
         UserEntity user = UserEntity.builder()
                 .lastName(request.getLastName())
@@ -95,9 +101,10 @@ public class UserApiController {
     )
 
 
-    @PutMapping(UserRoutes.BY_ID)
-    public UserResponse edit(@PathVariable Long id, @RequestBody EditUserRequest request) throws UserNotFoundException {
-        UserEntity user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+    @PutMapping(UserRoutes.EDIT)
+    public UserResponse edit(Principal principal, @RequestBody EditUserRequest request) throws UserNotFoundException {
+
+        UserEntity user = userRepository.findByEmail(principal.getName()).orElseThrow(UserNotFoundException::new);
         user.setLastName(request.getLastName());
         user.setFirstName(request.getFirstName());
         user = userRepository.save(user);
