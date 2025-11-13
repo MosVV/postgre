@@ -1,6 +1,5 @@
 package com.example.postgre;
 
-import com.example.postgre.user.dto.response.UserResponse;
 import com.example.postgre.user.entity.UserEntity;
 import com.example.postgre.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -8,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class PostgreApplicationTests {
+class PostgresApplicationTests {
 
     @Autowired
     private UserRepository userRepository;
